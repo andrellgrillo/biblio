@@ -1,36 +1,83 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Biblio - Sistema de Gestão de Bibliotecas
 
-## Getting Started
+Biblio é uma aplicação moderna para gestão de bibliotecas, construída com Next.js 15, Prisma ORM e PostgreSQL. O sistema oferece uma interface completa para bibliotecários e leitores, com foco em automação, design premium e facilidade de uso.
 
-First, run the development server:
+![Aesthetics](https://img.shields.io/badge/Aesthetics-Pastel%20Multicolor-ff69b4?style=for-the-badge)
+![Next.js](https://img.shields.io/badge/Next.js%2015-000000?style=for-the-badge&logo=next.js&logoColor=white)
+![Prisma](https://img.shields.io/badge/Prisma%20ORM-2D3748?style=for-the-badge&logo=prisma&logoColor=white)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-336791?style=for-the-badge&logo=postgresql&logoColor=white)
 
+## ✨ Funcionalidades
+
+### 🏛️ Painel Administrativo (Librarian)
+- **Gestão de Acervo:** CRUD completo de livros com integração de APIs externas (Brasil API e Google Books) para auto-preenchimento via ISBN.
+- **Controle de Exemplares:** Gestão individual de cópias físicas, monitorando estado de conservação e disponibilidade.
+- **Motor de Empréstimos:** Registro ágil de retiradas e devoluções com suporte a leitor de código de barras.
+- **Fila de Reserva FIFO:** Sistema automatizado que promove o próximo leitor da fila assim que um exemplar é devolvido.
+- **Dashboard de Analytics:** Visualização rápida de livros ativos, empréstimos em atraso e novas reservas.
+
+### 📖 Área do Leitor (Reader)
+- **Meus Empréstimos:** Histórico detalhado e status atual de livros retirados, com cronômetro de devolução.
+- **Minhas Reservas:** Cadastro em fila de espera e acompanhamento da posição atual na fila.
+- **Perfil e Dashboard:** Resumo visual das atividades do leitor.
+
+### 🎨 Design & UX
+- **Theme Multi-Pastel:** Cores suaves (Azul, Rosa, Verde, Amarelo e Vermelho) para uma experiência visual descansada e moderna.
+- **Glassmorphism:** Componentes com efeitos de transparência e desfoque.
+- **Compatibilidade com Hardware:** Otimizado para uso com scanners de código de barras (ISBN).
+
+## 🚀 Tecnologias Utilizadas
+
+- **Framework:** Next.js 15 (App Router)
+- **Linguagem:** TypeScript
+- **Banco de Dados:** PostgreSQL
+- **ORM:** Prisma
+- **Estilização:** Tailwind CSS v4
+- **Autenticação:** NextAuth.js
+- **Ícones:** Lucide React
+
+## 🛠️ Configuração Local
+
+### Pré-requisitos
+- Node.js 18+
+- PostgreSQL rodando localmente
+
+### Instalação
+
+1. Clone o repositório:
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+git clone https://github.com/andrellgrillo/biblio.git
+cd biblio
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+2. Instale as dependências:
+```bash
+npm install
+```
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+3. Configure as variáveis de ambiente:
+Crie um arquivo `.env` baseado no seu ambiente:
+```env
+DATABASE_URL="postgresql://user:password@localhost:5432/biblio"
+AUTH_SECRET="seu-secret-aqui"
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+4. Prepare o banco de dados:
+```bash
+npx prisma generate
+npx prisma db push
+npm run db:seed
+```
 
-## Learn More
+5. Inicie o servidor:
+```bash
+npm run dev
+```
 
-To learn more about Next.js, take a look at the following resources:
+## 🔐 Credenciais de Teste (Seed)
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- **Admin:** `admin@biblio.com` / `admin123`
+- **Leitor:** `leitor@biblio.com` / `leitor123`
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+---
+Desenvolvido com ❤️ por Antigravity.
