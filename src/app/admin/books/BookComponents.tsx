@@ -29,7 +29,75 @@ export function CreateBookForm() {
     undefined
   );
   const [open, setOpen] = useState(false);
+  const [fetching, setFetching] = useState(false);
 
+  const [formData, setFormData] = useState({
+    title: "",
+    author: "",
+    isbn: "",
+    genre: "",
+    publishedYear: "",
+    coverUrl: "",
+    synopsis: "",
+  });
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+  };
+
+  const handleFetchIsbn = async () => {
+    if (!formData.isbn) {
+      alert("Por favor, informe um ISBN antes de buscar.");
+      return;
+    }
+    const cleanIsbn = formData.isbn.replace(/\D/g, "");
+    if (cleanIsbn.length !== 10 && cleanIsbn.length !== 13) {
+      alert("ISBN inválido. Deve conter 10 ou 13 dígitos numéricos.");
+      return;
+    }
+
+    setFetching(true);
+    try {
+      // 1. Prioritize Brasil API
+      const brRes = await fetch(`https://brasilapi.com.br/api/isbn/v1/${cleanIsbn}`);
+      if (brRes.ok) {
+        const data = await brRes.json();
+        setFormData((prev) => ({
+          ...prev,
+          title: data.title || prev.title,
+          author: data.authors?.join(", ") || prev.author,
+          publishedYear: data.year ? String(data.year) : prev.publishedYear,
+          synopsis: data.synopsis || prev.synopsis,
+          coverUrl: data.cover_url || prev.coverUrl,
+        }));
+        setFetching(false);
+        return;
+      }
+
+      // 2. Fallback to Google Books API
+      const gRes = await fetch(`https://www.googleapis.com/books/v1/volumes?q=isbn:${cleanIsbn}`);
+      const gData = await gRes.json();
+      if (gData.items && gData.items.length > 0) {
+        const info = gData.items[0].volumeInfo;
+        setFormData((prev) => ({
+          ...prev,
+          title: info.title || prev.title,
+          author: info.authors?.join(", ") || prev.author,
+          genre: info.categories ? info.categories[0] : prev.genre,
+          publishedYear: info.publishedDate ? info.publishedDate.substring(0, 4) : prev.publishedYear,
+          synopsis: info.description || prev.synopsis,
+          coverUrl: info.imageLinks?.thumbnail?.replace("http:", "https:") || prev.coverUrl,
+        }));
+      } else {
+        alert("Nenhum livro encontrado para este ISBN nas APIs públicas.");
+      }
+    } catch (error) {
+      console.error(error);
+      alert("Erro de conexão ao buscar os dados do livro.");
+    } finally {
+      setFetching(false);
+    }
+  };
   if (!open) {
     return (
       <button onClick={() => setOpen(true)} className="btn-primary">
@@ -67,44 +135,102 @@ export function CreateBookForm() {
 
       <form action={formAction} className="space-y-4">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="sm:col-span-2">
+            <label htmlFor="isbn" className="block text-sm font-medium text-text-secondary mb-1">
+              ISBN *
+            </label>
+            <div className="flex gap-2">
+              <input
+                id="isbn"
+                name="isbn"
+                value={formData.isbn}
+                onChange={handleChange}
+                required
+                className="input-field flex-1"
+                placeholder="Ex: 978-85-359-0277-1"
+              />
+              <button
+                type="button"
+                onClick={handleFetchIsbn}
+                disabled={fetching}
+                className="btn-secondary !py-2 shrink-0"
+              >
+                <Search className="h-4 w-4" />
+                {fetching ? "Buscando..." : "Buscar na Web"}
+              </button>
+            </div>
+            {state?.errors?.isbn && <p className="mt-1 text-xs text-error">{state.errors.isbn[0]}</p>}
+          </div>
           <div>
             <label htmlFor="title" className="block text-sm font-medium text-text-secondary mb-1">
               Título *
             </label>
-            <input id="title" name="title" required className="input-field" placeholder="Ex: Dom Casmurro" />
+            <input
+              id="title"
+              name="title"
+              value={formData.title}
+              onChange={handleChange}
+              required
+              className="input-field"
+              placeholder="Ex: Dom Casmurro"
+            />
             {state?.errors?.title && <p className="mt-1 text-xs text-error">{state.errors.title[0]}</p>}
           </div>
           <div>
             <label htmlFor="author" className="block text-sm font-medium text-text-secondary mb-1">
               Autor *
             </label>
-            <input id="author" name="author" required className="input-field" placeholder="Ex: Machado de Assis" />
+            <input
+              id="author"
+              name="author"
+              value={formData.author}
+              onChange={handleChange}
+              required
+              className="input-field"
+              placeholder="Ex: Machado de Assis"
+            />
             {state?.errors?.author && <p className="mt-1 text-xs text-error">{state.errors.author[0]}</p>}
-          </div>
-          <div>
-            <label htmlFor="isbn" className="block text-sm font-medium text-text-secondary mb-1">
-              ISBN *
-            </label>
-            <input id="isbn" name="isbn" required className="input-field" placeholder="Ex: 978-85-359-0277-1" />
-            {state?.errors?.isbn && <p className="mt-1 text-xs text-error">{state.errors.isbn[0]}</p>}
           </div>
           <div>
             <label htmlFor="genre" className="block text-sm font-medium text-text-secondary mb-1">
               Gênero
             </label>
-            <input id="genre" name="genre" className="input-field" placeholder="Ex: Romance" />
+            <input
+              id="genre"
+              name="genre"
+              value={formData.genre}
+              onChange={handleChange}
+              className="input-field"
+              placeholder="Ex: Romance"
+            />
           </div>
           <div>
             <label htmlFor="publishedYear" className="block text-sm font-medium text-text-secondary mb-1">
               Ano de Publicação
             </label>
-            <input id="publishedYear" name="publishedYear" type="number" className="input-field" placeholder="Ex: 1899" />
+            <input
+              id="publishedYear"
+              name="publishedYear"
+              type="number"
+              value={formData.publishedYear}
+              onChange={handleChange}
+              className="input-field"
+              placeholder="Ex: 1899"
+            />
           </div>
-          <div>
+          <div className="sm:col-span-2">
             <label htmlFor="coverUrl" className="block text-sm font-medium text-text-secondary mb-1">
               URL da Capa
             </label>
-            <input id="coverUrl" name="coverUrl" type="url" className="input-field" placeholder="https://..." />
+            <input
+              id="coverUrl"
+              name="coverUrl"
+              type="url"
+              value={formData.coverUrl}
+              onChange={handleChange}
+              className="input-field"
+              placeholder="https://..."
+            />
           </div>
         </div>
         <div>
@@ -114,7 +240,9 @@ export function CreateBookForm() {
           <textarea
             id="synopsis"
             name="synopsis"
-            rows={3}
+            rows={4}
+            value={formData.synopsis}
+            onChange={handleChange}
             className="input-field resize-none"
             placeholder="Breve descrição do livro..."
           />
