@@ -7,8 +7,10 @@ export default function AdminLayout({
 }) {
   return (
     <div className="min-h-screen">
-      <Sidebar variant="admin" />
-      <main className="ml-64 min-h-screen p-8 transition-all duration-300">
+      <div className="print:hidden">
+        <Sidebar variant="admin" />
+      </div>
+      <main className="ml-64 print:ml-0 min-h-screen p-8 print:p-0 transition-all duration-300">
         {children}
       </main>
     </div>

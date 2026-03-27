@@ -7,7 +7,7 @@ import { revalidatePath } from "next/cache";
 
 type TxClient = Omit<PrismaClient, "$connect" | "$disconnect" | "$on" | "$transaction" | "$use" | "$extends">;
 
-export async function createLoan(copyCode: string, userEmail: string) {
+export async function createLoan(copyCode: string, userEmail: string, days: number = 14) {
   const session = await auth();
   if (session?.user?.role !== "LIBRARIAN") {
     return { error: "Acesso negado." };
@@ -26,7 +26,7 @@ export async function createLoan(copyCode: string, userEmail: string) {
   }
 
   const dueDate = new Date();
-  dueDate.setDate(dueDate.getDate() + 14); // 14 days loan period
+  dueDate.setDate(dueDate.getDate() + days);
 
   await prisma.$transaction([
     prisma.loan.create({
